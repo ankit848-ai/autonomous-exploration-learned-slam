@@ -2,6 +2,9 @@
 
 # Autonomous Exploration with Learned SLAM
 
+<!--UPGRADE-HEADER-->
+
+
 **A mobile robot that maps an unknown world by itself — and learns to do it better than the rule we wrote for it.**
 
 [![ROS2](https://img.shields.io/badge/ROS2-Humble-22314E?logo=ros&logoColor=white)](https://docs.ros.org/en/humble/)
@@ -64,6 +67,7 @@ Same map, same quality, **3.2 metres less driving**:
 
 ## Table of contents
 
+- [Repository](#repository)
 - [System architecture](#system-architecture)
 - [How the decision is made](#how-the-decision-is-made)
 - [The learned policy](#the-learned-policy)
@@ -74,42 +78,43 @@ Same map, same quality, **3.2 metres less driving**:
 - [Repository layout](#repository-layout)
 - [Running it](#running-it)
 - [Limitations and future work](#limitations-and-future-work)
+- [Citing this work](#citing-this-work)
 
 ---
 
+## Repository
+
+This project is published on both of the author's GitHub accounts. The two
+repositories hold identical content; either one can be cloned.
+
+| | Account | URL |
+|---|---|---|
+| **Primary** | `Ankit-builds1` | https://github.com/Ankit-builds1/autonomous-exploration-learned-slam |
+| **Mirror** | `ankit848-ai` | https://github.com/ankit848-ai/autonomous-exploration-learned-slam |
+
+```bash
+git clone https://github.com/Ankit-builds1/autonomous-exploration-learned-slam.git
+cd autonomous-exploration-learned-slam
+```
+
+The ROS2 package itself lives in [`01_Source_Code/explore_nav/`](01_Source_Code/explore_nav);
+everything else in the tree is evidence - trained weights, TensorBoard logs,
+saved maps, figures and the written report.
+
+<!--UPGRADE-REPOS-->
+
 ## System architecture
 
-```
-                 ┌──────────────────────────────────────┐
-                 │   Gazebo Classic 11                  │
-                 │   TurtleBot3 Waffle · hexagonal world│
-                 └───────────────┬──────────────────────┘
-                     /scan, /odom │
-                 ┌───────────────▼──────────────────────┐
-                 │   SLAM Toolbox                       │
-                 │   occupancy grid + map→odom transform│
-                 └───────────────┬──────────────────────┘
-                           /map  │
-                 ┌───────────────▼──────────────────────┐
-                 │   Frontier detection & clustering    │
-                 │   BFS flood fill → candidate regions │
-                 └───────────────┬──────────────────────┘
-                                 │  up to 8 candidates
-                 ┌───────────────▼──────────────────────┐
-                 │   EXPLORATION POLICY                 │
-                 │   ┌────────────────┬───────────────┐ │
-                 │   │  heuristic     │  PPO network  │ │
-                 │   │  (hand-tuned)  │  (learned)    │ │
-                 │   └────────────────┴───────────────┘ │
-                 └───────────────┬──────────────────────┘
-                     NavigateToPose│
-                 ┌───────────────▼──────────────────────┐
-                 │   Nav2                               │
-                 │   global plan · costmap · controller │
-                 └───────────────┬──────────────────────┘
-                        /cmd_vel  │
-                                  └──────► back to Gazebo
-```
+![System architecture](04_Figures/fig5_architecture.png)
+
+*Four layers. Everything shaded orange is code written for this project; the
+blue, green and purple blocks are off-the-shelf ROS2 components that were
+configured but not modified.*
+
+![Exploration workflow](04_Figures/fig6_workflow.png)
+
+*The runtime exploration loop (A), the offline PPO training pipeline (B), and
+the optional natural-language agentic layer (C).*
 
 A single ROS2 node, `frontier_explorer.py`, implements both policies behind one
 `policy` parameter. Both receive an **identical** candidate set, so the
@@ -484,3 +489,39 @@ B.Tech CSE (Data Analytics & Machine Learning), Class of 2027
 Centurion University of Technology and Management, Jatani, Bhubaneswar
 
 </div>
+
+
+---
+
+## Citing this work
+
+```bibtex
+@misc{dash2026autonomousexploration,
+  author       = {Ankit Dash},
+  title        = {Autonomous Exploration with Learned SLAM: A Reinforcement-Learned
+                  Frontier Selection Policy Evaluated Against a Hand-Tuned Heuristic},
+  year         = {2026},
+  howpublished = {\url{https://github.com/Ankit-builds1/autonomous-exploration-learned-slam}},
+  note         = {Final-year BTech CSE (DAML) project,
+                  Centurion University of Technology and Management}
+}
+```
+
+## Acknowledgements
+
+Built on [ROS2 Humble](https://docs.ros.org/en/humble/),
+[Nav2](https://navigation.ros.org/),
+[SLAM Toolbox](https://github.com/SteveMacenski/slam_toolbox),
+[TurtleBot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/),
+[Gazebo Classic](https://classic.gazebosim.org/),
+[Gymnasium](https://gymnasium.farama.org/) and
+[Stable-Baselines3](https://stable-baselines3.readthedocs.io/).
+The frontier-detection formulation follows Yamauchi (1997).
+
+## License
+
+Released under the MIT License - see [`LICENSE`](LICENSE).
+Upstream ROS2, Nav2, SLAM Toolbox, TurtleBot3 and Gazebo components remain
+under their own licences.
+
+<!--UPGRADE-CITE-->
